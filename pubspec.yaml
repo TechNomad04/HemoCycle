@@ -1,6 +1,6 @@
 name: hemocycle
-description: "A new Flutter project."
-publish_to: 'none'
+description: "The HemoCycle App Fornt-end."
+
 version: 1.0.0+1
 
 environment:
@@ -21,6 +21,8 @@ flutter:
     - assets/images/avatar.png
     - assets/images/camera.png
     - assets/images/heart.png
+    - assets/images/the_girl.png
+    - assets/images/the_eye.jpg
 
   uses-material-design: true
 
