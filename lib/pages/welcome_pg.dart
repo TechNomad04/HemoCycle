@@ -90,3 +90,4 @@ class WelcomePage extends StatelessWidget {
     );
   }
 }
+//Camera
