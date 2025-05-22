@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../widgets/page_header.dart';
 import '../widgets/result_card.dart';
@@ -7,13 +8,21 @@ class ResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final File? uploadedImage = args?['image'];
+    final String analysis = args?['analysis'] ?? 'Unknown';
+    final String region = args?['region'] ?? 'N/A';
+    final String recommendation = args?['recommendation'] ?? '';
+
     return Scaffold(
       backgroundColor: Colors.pink[50],
       appBar: AppBar(
         title: const Text('Your Results'),
         backgroundColor: Colors.redAccent,
       ),
-      body: SingleChildScrollView(
+      body: uploadedImage == null
+          ? const Center(child: Text('No image provided.'))
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -21,35 +30,45 @@ class ResultPage extends StatelessWidget {
             const PageHeader(title: 'Here’s What We Found'),
             const SizedBox(height: 20),
 
-            // Responsive Result Cards
+            // Display Uploaded Image
+            Center(
+              child: Image.file(
+                uploadedImage,
+                height: 200,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Result Summary
             Wrap(
               spacing: 16.0,
               runSpacing: 16.0,
               alignment: WrapAlignment.center,
-              children: const [
+              children: [
                 ResultCard(
-                  title: 'Lower Eyelids',
-                  status: 'Mild Anemia',
-                  imagePath: 'assets/images/the_eye.jpg',
+                  title: region,
+                  status: analysis,
+                  imageFile: uploadedImage, // Display the uploaded image here
                 ),
               ],
             ),
             const SizedBox(height: 30),
 
-            // Recommendation Card
-            Card(
-              color: Colors.orange[50],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Mild Iron Deficiency Detected. Try more leafy greens and iron-rich foods.',
-                  style: TextStyle(fontSize: 16),
+            // Recommendation Section
+            if (recommendation.isNotEmpty)
+              Card(
+                color: Colors.orange[50],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    recommendation,
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 20),
 
             // Action Buttons

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'result_pg.dart';
+import 'package:camera/camera.dart';
+import 'home_page.dart';
 import '../widgets/page_header.dart';
 
 class CreateAccountPage extends StatelessWidget {
-  const CreateAccountPage({super.key});
+  final List<CameraDescription> cameras;
+  const CreateAccountPage({super.key, required this.cameras});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +54,7 @@ class CreateAccountPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ResultPage()),
+                  MaterialPageRoute(builder: (_) => HomePage(cameras: cameras)),
                 );
               },
               style: ElevatedButton.styleFrom(

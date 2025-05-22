@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'result_pg.dart';
 import 'create_account_pg.dart';
-
+import 'home_page.dart';
+import 'package:camera/camera.dart';
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+  final List<CameraDescription> cameras;
+  const WelcomePage({super.key, required this.cameras});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,7 @@ class WelcomePage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ResultPage()),
+                  MaterialPageRoute(builder: (_) => HomePage(cameras: cameras)),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
@@ -76,7 +78,7 @@ class WelcomePage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreateAccountPage()),
+                    MaterialPageRoute(builder: (_) => CreateAccountPage(cameras: cameras)),
                   );
                 },
                 child: const Text('New here? Create an account'),
