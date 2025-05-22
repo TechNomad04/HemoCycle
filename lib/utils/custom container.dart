@@ -7,7 +7,6 @@ class CustomInfoContainer extends StatelessWidget {
   final VoidCallback? onIconPressed;
   final IconData icon;
 
-
   const CustomInfoContainer({
     Key? key,
     required this.title,
@@ -19,36 +18,47 @@ class CustomInfoContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-
-      child: Row(
-        children: [
-          IconButton(
-          icon: Icon(icon, color: Colors.white),
-      onPressed: onIconPressed,
-      iconSize: 30,
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
+    return InkWell(
+      onTap: onIconPressed,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.6), // More visible background
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.redAccent, // More visible color
+              size: 30,
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                   style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown[500])),
-              const SizedBox(height: 5),
-              Text(subtitle,
-                  style: const TextStyle(fontSize: 14, color: Colors.brown)),
-            ],
-          ),
-        ],
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.brown[500],
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.brown,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
