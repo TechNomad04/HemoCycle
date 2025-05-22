@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:camera/camera.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -45,18 +48,32 @@ class _UploadPageState extends State<UploadPage> {
     }
   }
 
-  void _goToResults() {
+  void _goToResults() async {
     if (_capturedImage == null) return;
 
-    final resultData = {
-      'image': File(_capturedImage!.path),
-      'analysis': 'Mild Anemia',
-      'region': 'Lower Eyelids',
-      'recommendation': 'Try more leafy greens and iron-rich foods.',
-    };
-
-    Navigator.pushNamed(context, '/results', arguments: resultData);
+    if (kIsWeb) {
+      // Read image bytes on Web and convert to base64 string
+      Uint8List bytes = await _capturedImage!.readAsBytes();
+      String base64Image = base64Encode(bytes);
+      final resultData = {
+        'imageBase64': base64Image,
+        'analysis': 'Mild Anemia',
+        'region': 'Lower Eyelids',
+        'recommendation': 'Try more leafy greens and iron-rich foods.',
+      };
+      Navigator.pushNamed(context, '/results', arguments: resultData);
+    } else {
+      // For mobile and others, pass the file path
+      final resultData = {
+        'image': File(_capturedImage!.path),
+        'analysis': 'Mild Anemia',
+        'region': 'Lower Eyelids',
+        'recommendation': 'Try more leafy greens and iron-rich foods.',
+      };
+      Navigator.pushNamed(context, '/results', arguments: resultData);
+    }
   }
+
 
   Widget _buildImagePreview() {
     if (_capturedImage == null) {
