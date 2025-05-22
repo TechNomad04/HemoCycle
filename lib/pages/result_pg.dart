@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../widgets/page_header.dart';
 import '../widgets/result_card.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+
 
 class ResultPage extends StatelessWidget {
   const ResultPage({super.key});
@@ -36,7 +36,7 @@ class ResultPage extends StatelessWidget {
         title: const Text('Your Results'),
         backgroundColor: Colors.redAccent,
       ),
-      body: (kIsWeb && imageBytes == null) || (!kIsWeb && uploadedImage == null)
+      body: uploadedImage == null
           ? const Center(child: Text('No image provided.'))
           : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -63,7 +63,8 @@ class ResultPage extends StatelessWidget {
                 ResultCard(
                   title: region,
                   status: analysis,
-                  imageFile: uploadedImage, // You can modify ResultCard for web if needed
+                  imageFile: uploadedImage,
+                  webImageBytes: imageBytes,
                 ),
               ],
             ),
