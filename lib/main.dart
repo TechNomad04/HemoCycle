@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:hemocycle/pages/home_page.dart';
-import 'package:hemocycle/utils/navigation_bar.dart';
+import 'package:camera/camera.dart';
+import 'utils/navigation_bar.dart';
 import 'pages/welcome_pg.dart';
 import 'pages/result_pg.dart';
 
+late List<CameraDescription> cameras;
 
-void main() {
-  runApp(const HemoCycleApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
+
+  runApp(HemoCycleApp());
 }
 
 class HemoCycleApp extends StatelessWidget {
@@ -14,14 +18,14 @@ class HemoCycleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  return MaterialApp(
-  title: 'HemoCycle App',
-  initialRoute: '/',
-  routes: {
-  '/': (context) => WelcomePage(),
-  '/home': (context) => HomePage(),
-  '/results': (context) => ResultPage(),
-  },
-  );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: WelcomePage(cameras: cameras),
+      title: 'HemoCycleApp',
+      theme: ThemeData(primarySwatch: Colors.red),
+      routes: {
+        '/results': (context) => const ResultPage(),
+      },
+    );
   }
-  }
+}
