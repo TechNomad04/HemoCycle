@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../widgets/page_header.dart';
 import '../widgets/result_card.dart';
@@ -9,7 +13,19 @@ class ResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments as Map?;
-    final File? uploadedImage = args?['image'];
+
+    // For Web, decode base64 string to bytes
+    Uint8List? imageBytes;
+    File? uploadedImage;
+
+    String? base64String = args?['imageBase64'];
+
+    if (kIsWeb && base64String != null) {
+      imageBytes = base64Decode(base64String);
+    } else {
+      uploadedImage = args?['image'];
+    }
+
     final String analysis = args?['analysis'] ?? 'Unknown';
     final String region = args?['region'] ?? 'N/A';
     final String recommendation = args?['recommendation'] ?? '';
@@ -20,7 +36,7 @@ class ResultPage extends StatelessWidget {
         title: const Text('Your Results'),
         backgroundColor: Colors.redAccent,
       ),
-      body: uploadedImage == null
+      body: (kIsWeb && imageBytes == null) || (!kIsWeb && uploadedImage == null)
           ? const Center(child: Text('No image provided.'))
           : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -30,12 +46,11 @@ class ResultPage extends StatelessWidget {
             const PageHeader(title: 'Here’s What We Found'),
             const SizedBox(height: 20),
 
-            // Display Uploaded Image
+            // Display Uploaded Image (memory for web, file for others)
             Center(
-              child: Image.file(
-                uploadedImage,
-                height: 200,
-              ),
+              child: kIsWeb
+                  ? Image.memory(imageBytes!, height: 200)
+                  : Image.file(uploadedImage!, height: 200),
             ),
             const SizedBox(height: 20),
 
@@ -48,7 +63,7 @@ class ResultPage extends StatelessWidget {
                 ResultCard(
                   title: region,
                   status: analysis,
-                  imageFile: uploadedImage, // Display the uploaded image here
+                  imageFile: uploadedImage, // You can modify ResultCard for web if needed
                 ),
               ],
             ),
@@ -97,3 +112,4 @@ class ResultPage extends StatelessWidget {
     );
   }
 }
+
