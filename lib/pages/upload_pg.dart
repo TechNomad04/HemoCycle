@@ -1,10 +1,10 @@
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:camera/camera.dart';
-import 'dart:convert';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -19,6 +19,7 @@ class _UploadPageState extends State<UploadPage> {
   late CameraController _controller;
   late Future<void> _initCamera;
   XFile? _capturedImage;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -48,32 +49,49 @@ class _UploadPageState extends State<UploadPage> {
     }
   }
 
-  void _goToResults() async {
+  Future<void> _sendImageToAPI() async {
     if (_capturedImage == null) return;
 
-    if (kIsWeb) {
-      // Read image bytes on Web and convert to base64 string
-      Uint8List bytes = await _capturedImage!.readAsBytes();
-      String base64Image = base64Encode(bytes);
-      final resultData = {
-        'imageBase64': base64Image,
-        'analysis': 'Mild Anemia',
-        'region': 'Lower Eyelids',
-        'recommendation': 'Try more leafy greens and iron-rich foods.',
-      };
-      Navigator.pushNamed(context, '/results', arguments: resultData);
-    } else {
-      // For mobile and others, pass the file path
-      final resultData = {
-        'image': File(_capturedImage!.path),
-        'analysis': 'Mild Anemia',
-        'region': 'Lower Eyelids',
-        'recommendation': 'Try more leafy greens and iron-rich foods.',
-      };
-      Navigator.pushNamed(context, '/results', arguments: resultData);
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final uri = Uri.parse('http://localhost:8000/predict'); // change IP if needed
+      var request = http.MultipartRequest('POST', uri);
+
+      request.files.add(
+        await http.MultipartFile.fromPath('file', _capturedImage!.path),
+      );
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final resultData = {
+          'image': File(_capturedImage!.path),
+          'analysis': data['analysis'] ?? 'No analysis',
+          'region': data['region'] ?? 'Unknown region',
+          'recommendation': data['recommendation'] ?? 'No recommendation',
+        };
+
+        Navigator.pushNamed(context, '/results', arguments: resultData);
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Upload error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload failed: $e')),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
     }
   }
-
 
   Widget _buildImagePreview() {
     if (_capturedImage == null) {
@@ -85,9 +103,7 @@ class _UploadPageState extends State<UploadPage> {
       );
     }
 
-    return kIsWeb
-        ? Image.network(_capturedImage!.path, height: 250)
-        : Image.file(File(_capturedImage!.path), height: 250);
+    return Image.file(File(_capturedImage!.path), height: 250);
   }
 
   @override
@@ -121,10 +137,12 @@ class _UploadPageState extends State<UploadPage> {
                     _buildImagePreview(),
                     const SizedBox(height: 20),
                     if (_capturedImage != null)
-                      ElevatedButton(
-                        onPressed: _goToResults,
+                      _isUploading
+                          ? CircularProgressIndicator()
+                          : ElevatedButton(
+                        onPressed: _sendImageToAPI,
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                        child: const Text("View Results"),
+                        child: const Text("Analyze Image"),
                       ),
                   ],
                 ),

@@ -63,7 +63,8 @@ class ResultPage extends StatelessWidget {
                 ResultCard(
                   title: region,
                   status: analysis,
-                  imageFile: uploadedImage, // You can modify ResultCard for web if needed
+                  imageFile: uploadedImage,
+                  imageBytes: imageBytes,
                 ),
               ],
             ),
