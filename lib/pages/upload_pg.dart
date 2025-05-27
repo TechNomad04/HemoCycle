@@ -1,10 +1,7 @@
 import 'dart:io';
-import 'dart:convert';
-import 'dart:typed_data';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:camera/camera.dart';
-import 'package:http/http.dart' as http;
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -19,7 +16,7 @@ class _UploadPageState extends State<UploadPage> {
   late CameraController _controller;
   late Future<void> _initCamera;
   XFile? _capturedImage;
-  bool _isUploading = false;
+  bool _isAnalyzing = false;
 
   @override
   void initState() {
@@ -49,48 +46,42 @@ class _UploadPageState extends State<UploadPage> {
     }
   }
 
-  Future<void> _sendImageToAPI() async {
+  Future<void> _analyzeOfflineMock() async {
     if (_capturedImage == null) return;
 
     setState(() {
-      _isUploading = true;
+      _isAnalyzing = true;
     });
 
-    try {
-      final uri = Uri.parse('http://localhost:8000/predict'); // change IP if needed
-      var request = http.MultipartRequest('POST', uri);
+    await Future.delayed(const Duration(seconds: 2)); // simulate processing time
 
-      request.files.add(
-        await http.MultipartFile.fromPath('file', _capturedImage!.path),
-      );
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        final resultData = {
-          'image': File(_capturedImage!.path),
-          'analysis': data['analysis'] ?? 'No analysis',
-          'region': data['region'] ?? 'Unknown region',
-          'recommendation': data['recommendation'] ?? 'No recommendation',
-        };
-
-        Navigator.pushNamed(context, '/results', arguments: resultData);
-      } else {
-        throw Exception('Server error: ${response.statusCode}');
+    final results = [
+      {
+        'analysis': 'Anemic',
+        'region': 'Lower Conjunctiva',
+        'recommendation': 'Consider iron supplements and blood test'
+      },
+      {
+        'analysis': 'Non-Anemic',
+        'region': 'Healthy Eye Region',
+        'recommendation': 'No action needed'
       }
-    } catch (e) {
-      print('Upload error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: $e')),
-      );
-    } finally {
-      setState(() {
-        _isUploading = false;
-      });
-    }
+    ];
+
+    final mockResult = results[Random().nextInt(results.length)];
+
+    final resultData = {
+      'image': File(_capturedImage!.path),
+      'analysis': mockResult['analysis'],
+      'region': mockResult['region'],
+      'recommendation': mockResult['recommendation'],
+    };
+
+    setState(() {
+      _isAnalyzing = false;
+    });
+
+    Navigator.pushNamed(context, '/results', arguments: resultData);
   }
 
   Widget _buildImagePreview() {
@@ -137,10 +128,10 @@ class _UploadPageState extends State<UploadPage> {
                     _buildImagePreview(),
                     const SizedBox(height: 20),
                     if (_capturedImage != null)
-                      _isUploading
-                          ? CircularProgressIndicator()
+                      _isAnalyzing
+                          ? const CircularProgressIndicator()
                           : ElevatedButton(
-                        onPressed: _sendImageToAPI,
+                        onPressed: _analyzeOfflineMock,
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                         child: const Text("Analyze Image"),
                       ),
@@ -156,3 +147,4 @@ class _UploadPageState extends State<UploadPage> {
     );
   }
 }
+

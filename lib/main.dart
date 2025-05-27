@@ -24,8 +24,12 @@ class HemoCycleApp extends StatelessWidget {
       title: 'HemoCycleApp',
       theme: ThemeData(primarySwatch: Colors.red),
       routes: {
-        '/results': (context) => const ResultPage(),
-      },
+        '/results': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return ResultPage(resultData: args);
+        },
+      }
+      ,
     );
   }
 }
